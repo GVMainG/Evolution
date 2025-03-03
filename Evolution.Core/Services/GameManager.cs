@@ -7,8 +7,8 @@ namespace Evolution.Core.Services;
 /// </summary>
 public class GameManager
 {
-    private const int InitialUnits = 20; // Количество стартовых юнитов
-    private const int InitialFood = 50;  // Количество стартовой еды
+    private const int InitialUnits = 15; // Количество стартовых юнитов
+    private const int InitialFood = 10;  // Количество стартовой еды
     private readonly GameField _gameField;
     private readonly List<Unit> _units;
     private readonly List<Food> _food;
@@ -61,8 +61,8 @@ public class GameManager
         // Генерируем стартовую еду
         for (int i = 0; i < InitialFood; i++)
         {
-            int x = random.Next(64);
-            int y = random.Next(64);
+            int x = random.Next(32);
+            int y = random.Next(32);
             var food = new Food(x, y);
             _food.Add(food);
             _gameField.GetCell(x, y).AddFood(food);
