@@ -33,7 +33,6 @@ namespace Evolution.Core.Services
             while (_isRunning && !cancellationToken.IsCancellationRequested)
             {
                 UpdateGame();
-                RenderGameField();
                 await Task.Delay(1000 / _tickRate);
             }
         }
@@ -63,30 +62,6 @@ namespace Evolution.Core.Services
                     _food.Add(newFood);
                 }
             }
-        }
-
-        private void RenderGameField()
-        {
-            Console.Clear();
-            Console.WriteLine("Evolution Simulation");
-
-            for (int y = 0; y < 64; y++)
-            {
-                for (int x = 0; x < 64; x++)
-                {
-                    var cell = _gameField.GetCell(x, y);
-
-                    if (cell.Units.Any())
-                        Console.Write("U ");  // Юнит
-                    else if (cell.Foods.Any())
-                        Console.Write("F ");  // Еда
-                    else
-                        Console.Write(". ");  // Пустая клетка
-                }
-                Console.WriteLine();
-            }
-
-            Console.WriteLine($"\nЮнитов: {_units.Count} | Еды: {_food.Count}");
         }
     }
 }

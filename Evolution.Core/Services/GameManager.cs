@@ -30,6 +30,8 @@ public class GameManager
         _simulationEngine = new SimulationEngine(_gameField, _units, _food, tickRate);
     }
 
+    public GameField GameField => _gameField;
+
     /// <summary>
     /// Запускает игру.
     /// </summary>
