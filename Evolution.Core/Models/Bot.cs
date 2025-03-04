@@ -6,37 +6,60 @@ namespace Evolution.Core.Models
     {
         private static readonly Random Random = new();
 
+        /// <summary>
+        /// Получает координату X бота.
+        /// </summary>
         public int X { get; private set; }
+
+        /// <summary>
+        /// Получает координату Y бота.
+        /// </summary>
         public int Y { get; private set; }
+
+        /// <summary>
+        /// Получает направление, в котором смотрит бот.
+        /// </summary>
         public Direction Facing { get; private set; }
+
+        /// <summary>
+        /// Получает текущий уровень энергии бота.
+        /// </summary>
         public int Energy { get; private set; } = 15;
-        public int[] Genome { get; set; }
+
+        /// <summary>
+        /// Получает текущий индекс команды в геноме.
+        /// </summary>
         public int CommandIndex { get; private set; } = 0;
 
-        public Bot(int x, int y)
+        /// <summary>
+        /// Получает количество поколений, которые пережил бот.
+        /// </summary>
+        public int GenerationsSurvived { get; private set; } = 0;
+
+        public Genome Genome { get; set; }  // Теперь у бота есть отдельный объект Genome
+
+        public Bot(int x, int y, Genome genome)
         {
             X = x;
             Y = y;
-            Facing = (Direction)Random.Next(0, 4);
-            Genome = GenerateRandomGenome();
+            Facing = (Direction)Random.Shared.Next(0, 4);
+            Genome = genome;
+            Genome.IncreaseUsage(); // Увеличиваем счетчик использования генома
         }
 
-        private int[] GenerateRandomGenome()
-        {
-            int[] genome = new int[64];
-            for (int i = 0; i < genome.Length; i++)
-            {
-                genome[i] = Random.Next(0, 64);
-            }
-            return genome;
-        }
+        public void IncreaseSurvival() => Genome.IncreaseSurvival();
 
+        /// <summary>
+        /// Выполняет следующую команду в геноме бота.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
         public void ExecuteNextCommand(GameField field)
         {
             if (Energy <= 0) return; // Бот мертв
 
-            int command = Genome[CommandIndex];
+            int command = Genome.Genes[CommandIndex];
 
+            // Определяем действие на основе значения команды
             if (command >= 0 && command <= 7)
                 Move(field);
             else if (command >= 8 && command <= 15)
@@ -53,10 +76,29 @@ namespace Evolution.Core.Models
             Energy--; // Каждый ход бот теряет 1 сытость
         }
 
+        /// <summary>
+        /// Генерирует случайный геном для бота.
+        /// </summary>
+        /// <returns>Массив, представляющий геном.</returns>
+        private int[] GenerateRandomGenome()
+        {
+            int[] genome = new int[64];
+            for (int i = 0; i < genome.Length; i++)
+            {
+                genome[i] = Random.Next(0, 64);
+            }
+            return genome;
+        }
+
+        /// <summary>
+        /// Перемещает бота в направлении, в котором он смотрит.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
         private void Move(GameField field)
         {
             int newX = X, newY = Y;
 
+            // Вычисляем новую позицию на основе направления, в котором смотрит бот
             switch (Facing)
             {
                 case Direction.Up: newY--; break;
@@ -65,6 +107,7 @@ namespace Evolution.Core.Models
                 case Direction.Left: newX--; break;
             }
 
+            // Проверяем, является ли новая позиция допустимой и не является ли она стеной
             if (field.IsValidPosition(newX, newY) && field.Cells[newX, newY].Type != CellType.Wall)
             {
                 field.Cells[X, Y].Bot = null;
@@ -75,6 +118,10 @@ namespace Evolution.Core.Models
             }
         }
 
+        /// <summary>
+        /// Позволяет боту взять еду с текущей позиции.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
         private void GrabFood(GameField field)
         {
             if (field.Cells[X, Y].Type == CellType.Food)
@@ -84,10 +131,15 @@ namespace Evolution.Core.Models
             }
         }
 
+        /// <summary>
+        /// Позволяет боту заглянуть вперед и скорректировать индекс команды на основе типа клетки.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
         private void LookAhead(GameField field)
         {
             int newX = X, newY = Y;
 
+            // Вычисляем позицию перед ботом
             switch (Facing)
             {
                 case Direction.Up: newY--; break;
@@ -96,6 +148,7 @@ namespace Evolution.Core.Models
                 case Direction.Left: newX--; break;
             }
 
+            // Корректируем индекс команды на основе типа клетки перед ботом
             if (field.IsValidPosition(newX, newY))
             {
                 CellType cellType = field.Cells[newX, newY].Type;
@@ -109,11 +162,18 @@ namespace Evolution.Core.Models
             CommandIndex = CommandIndex % 64;
         }
 
+        /// <summary>
+        /// Поворачивает бота на следующее направление (по часовой стрелке).
+        /// </summary>
         private void Turn()
         {
             Facing = (Direction)(((int)Facing + 1) % 4);
         }
 
+        /// <summary>
+        /// Преобразует яд в текущей клетке в еду.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
         private void ConvertPoison(GameField field)
         {
             if (field.Cells[X, Y].Type == CellType.Poison)
@@ -122,9 +182,12 @@ namespace Evolution.Core.Models
             }
         }
 
+        /// <summary>
+        /// Перепрыгивает на новый индекс команды на основе текущего значения команды.
+        /// </summary>
         private void Jump()
         {
-            CommandIndex = Genome[CommandIndex] % 64;
+            CommandIndex = Genome.Genes[CommandIndex] % 64;
         }
     }
 }

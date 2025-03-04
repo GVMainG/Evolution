@@ -1,23 +1,18 @@
 ﻿using Evolution.Core.Models;
 
-namespace Evolution.Core.Tools
+namespace Evolution.Core
 {
     public class GeneticAlgorithm
     {
         private static readonly Random Random = new();
 
-        /// <summary>
-        /// Отбирает 10 лучших ботов, основываясь на их энергии.
-        /// </summary>
         public List<Bot> SelectSurvivors(List<Bot> bots)
         {
-            return bots.OrderByDescending(b => b.Energy).Take(10).ToList();
+            return bots.OrderByDescending(b => b.Genome.GenerationsSurvived).Take(10).ToList();
         }
 
-        /// <summary>
-        /// Генерирует новое поколение ботов.
-        /// </summary>
-        public List<Bot> GenerateNewGeneration(List<Bot> survivors, int fieldWidth, int fieldHeight)
+        public List<Bot> GenerateNewGeneration(List<Bot> survivors, int fieldWidth, int fieldHeight, int currentGeneration,
+            GameField field)
         {
             List<Bot> newGeneration = new();
 
@@ -28,49 +23,56 @@ namespace Evolution.Core.Tools
                     newGeneration.Add(CloneBot(survivor, fieldWidth, fieldHeight));
                 }
 
-                newGeneration.Add(CreateRandomBot(fieldWidth, fieldHeight));
-                newGeneration.Add(CreateMutant(survivor, fieldWidth, fieldHeight));
+                newGeneration.Add(CreateRandomBot(field, currentGeneration));
+                newGeneration.Add(CreateMutant(survivor, fieldWidth, fieldHeight, currentGeneration));
             }
 
             return newGeneration;
         }
 
-        /// <summary>
-        /// Создаёт копию бота.
-        /// </summary>
         private Bot CloneBot(Bot parent, int fieldWidth, int fieldHeight)
         {
-            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight))
-            {
-                Genome = (int[])parent.Genome.Clone()
-            };
+            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight), parent.Genome);
         }
 
-        /// <summary>
-        /// Создаёт случайного бота.
-        /// </summary>
-        private Bot CreateRandomBot(int fieldWidth, int fieldHeight)
+        private Bot CreateRandomBot(GameField field, int currentGeneration)
         {
-            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight));
-        }
-
-        /// <summary>
-        /// Создаёт мутанта, изменяя часть генома.
-        /// </summary>
-        private Bot CreateMutant(Bot parent, int fieldWidth, int fieldHeight)
-        {
-            int[] mutantGenome = (int[])parent.Genome.Clone();
-
-            for (int i = 0; i < 5; i++) // Мутируем 5 случайных команд
+            // Генерируем случайный ген
+            int[] randomGenes = new int[64];
+            for (int i = 0; i < randomGenes.Length; i++)
             {
-                int mutationIndex = Random.Next(64);
-                mutantGenome[mutationIndex] = Random.Next(64);
+                randomGenes[i] = Random.Shared.Next(64);
             }
 
-            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight))
+            // Создаём новый объект Genome с указанием поколения создания
+            Genome newGenome = new Genome(randomGenes, currentGeneration);
+
+            // Ищем свободную клетку для размещения
+            int x, y;
+            do
             {
-                Genome = mutantGenome
-            };
+                x = Random.Shared.Next(GameField.Width);
+                y = Random.Shared.Next(GameField.Height);
+            }
+            while (field.Cells[x, y].Bot != null); // Проверяем, чтобы бот не появился на другом боте
+
+            return new Bot(x, y, newGenome);
+        }
+
+
+
+        private Bot CreateMutant(Bot parent, int fieldWidth, int fieldHeight, int currentGeneration)
+        {
+            int[] mutantGenes = (int[])parent.Genome.Genes.Clone();
+
+            for (int i = 0; i < 5; i++)
+            {
+                int mutationIndex = Random.Next(64);
+                mutantGenes[mutationIndex] = Random.Next(64);
+            }
+
+            Genome mutatedGenome = new Genome(mutantGenes, currentGeneration);
+            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight), mutatedGenome);
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         public const int Width = 64;
         public const int Height = 64;
-        public Cell[,] Cells { get; private set; }
+        public Cell[,] Cells { get; set; }
 
         public GameField()
         {
