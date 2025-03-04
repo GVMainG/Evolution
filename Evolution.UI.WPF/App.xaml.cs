@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace Evolution.UI.ClientWPF;
+namespace Evolution.UI.WPF;
 
 /// <summary>
 /// Interaction logic for App.xaml
