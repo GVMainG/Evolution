@@ -23,6 +23,7 @@ namespace Evolution.Core.Tools
             _foodSpawner = new FoodPoisonSpawner();
             _generation = 1;
             _turns = 0;
+            InitializeWalls(); // Добавляем стены
             InitializeBots();
         }
 
@@ -36,7 +37,20 @@ namespace Evolution.Core.Tools
                 GameField.Cells[bot.X, bot.Y].Bot = bot;
             }
         }
-
+        private void InitializeWalls()
+        {
+            for (int x = 0; x < GameField.Width; x++)
+            {
+                for (int y = 0; y < GameField.Height; y++)
+                {
+                    if (x == 0 || x == GameField.Width - 1 || y == 0 || y == GameField.Height - 1)
+                    {
+                        GameField.Cells[x, y].Type = CellType.Wall;
+                    }
+                }
+            }
+        }
+        
         public void Start()
         {
             while (_generation <= MaxGenerations)
@@ -45,7 +59,7 @@ namespace Evolution.Core.Tools
             }
         }
 
-        public void RunGeneration() // Сделали публичным для доступа из UI
+        public void RunGeneration()
         {
             _turns = 0;
             while (_bots.Count > 10) // Пока не останется 10 ботов
@@ -53,11 +67,11 @@ namespace Evolution.Core.Tools
                 _turns++;
                 UpdateBots();
 
-                if (_turns % 5 == 0)
-                {
-                    _foodSpawner.SpawnFood(GameField);
-                    _foodSpawner.ConvertOldFoodToPoison(GameField);
-                }
+                //if (_turns % 5 == 0)
+                //{
+                //    _foodSpawner.SpawnFood(GameField);
+                //    _foodSpawner.ConvertOldFoodToPoison(GameField);
+                //}
 
                 OnGameUpdated?.Invoke(_generation, _bots.Count);
             }
@@ -91,6 +105,7 @@ namespace Evolution.Core.Tools
                 _bots = _geneticAlgorithm.GenerateNewGeneration(survivors, GameField.Width, GameField.Height);
             }
 
+            _foodSpawner.SpawnFood(GameField); // Генерируем еду только в начале поколения
             _generation++;
         }
     }

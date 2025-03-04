@@ -1,8 +1,7 @@
-﻿using System.Windows.Controls;
+﻿using Evolution.Core.Models;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Evolution.Core;
-using Evolution.Core.Models;
 
 namespace Evolution.UI.WPF
 {
@@ -18,15 +17,20 @@ namespace Evolution.UI.WPF
 
         public void Render(GameField field)
         {
-            _canvas.Children.Clear();
-
-            for (int x = 0; x < GameField.Width; x++)
+            _canvas.Dispatcher.Invoke(() =>
             {
-                for (int y = 0; y < GameField.Height; y++)
+                _canvas.Children.Clear();
+
+                for (int x = 0; x < GameField.Width; x++)
                 {
-                    DrawCell(x, y, field.Cells[x, y]);
+                    for (int y = 0; y < GameField.Height; y++)
+                    {
+                        DrawCell(x, y, field.Cells[x, y]);
+                    }
                 }
-            }
+
+                _canvas.UpdateLayout(); // Принудительное обновление UI
+            });
         }
 
         private void DrawCell(int x, int y, Cell cell)
@@ -46,13 +50,15 @@ namespace Evolution.UI.WPF
 
         private Brush GetCellColor(Cell cell)
         {
+            // Если в клетке есть бот, он должен быть виден поверх других объектов
+            if (cell.Bot != null) return Brushes.Blue;
+
             return cell.Type switch
             {
-                CellType.Empty => Brushes.White,
                 CellType.Wall => Brushes.Gray,
                 CellType.Food => Brushes.Red,
                 CellType.Poison => Brushes.Green,
-                CellType.Bot => Brushes.Blue,
+                CellType.Empty => Brushes.White,
                 _ => Brushes.White
             };
         }
