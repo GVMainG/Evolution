@@ -1,10 +1,22 @@
 ﻿namespace Evolution.Core.Models
 {
-    public class Cell
+    public enum CellType
     {
-        public CellType Type { get; set; }
-        public Bot? Bot { get; set; }
+        Empty,  // Пустая клетка
+        Wall,   // Стена (непроходимая)
+        Food,   // Еда
+        Poison, // Яд
+        Bot     // Бот (юнит)
     }
 
-    public enum CellType { Empty, Wall, Food, Poison, Bot }
+    public class Cell
+    {
+        public CellType Type { get; set; } = CellType.Empty;
+        public Bot? Bot { get; set; }  // Если в клетке бот
+
+        public Cell(CellType type)
+        {
+            Type = type;
+        }
+    }
 }
