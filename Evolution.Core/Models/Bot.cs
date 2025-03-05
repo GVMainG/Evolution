@@ -1,6 +1,4 @@
-﻿using Evolution.Core.Tools;
-
-namespace Evolution.Core.Models
+﻿namespace Evolution.Core.Models
 {
     public class Bot
     {
@@ -32,11 +30,9 @@ namespace Evolution.Core.Models
         public int CommandIndex { get; private set; } = 0;
 
         /// <summary>
-        /// Получает количество поколений, которые пережил бот.
+        /// Генетический код бота.
         /// </summary>
-        public int GenerationsSurvived { get; private set; } = 0;
-
-        public Genome Genome { get; set; }  // Теперь у бота есть отдельный объект Genome
+        public Genome Genome { get; set; }
 
         public Bot(int x, int y, Genome genome)
         {
