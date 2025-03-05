@@ -49,8 +49,8 @@ namespace Evolution.Core.Tools
                 int x, y;
                 do
                 {
-                    x = Random.Shared.Next(GameField.Width);
-                    y = Random.Shared.Next(GameField.Height);
+                    x = Random.Shared.Next(GameField.width);
+                    y = Random.Shared.Next(GameField.height);
                 }
                 while (GameField.Cells[x, y].Bot != null); // Проверяем, чтобы не было пересечения ботов
 
@@ -63,11 +63,11 @@ namespace Evolution.Core.Tools
 
         private void InitializeWalls()
         {
-            for (int x = 0; x < GameField.Width; x++)
+            for (int x = 0; x < GameField.width; x++)
             {
-                for (int y = 0; y < GameField.Height; y++)
+                for (int y = 0; y < GameField.height; y++)
                 {
-                    if (x == 0 || x == GameField.Width - 1 || y == 0 || y == GameField.Height - 1)
+                    if (x == 0 || x == GameField.width - 1 || y == 0 || y == GameField.height - 1)
                     {
                         GameField.Cells[x, y].Type = CellType.Wall;
                     }
@@ -140,7 +140,7 @@ namespace Evolution.Core.Tools
                     survivor.IncreaseSurvival();
                 }
 
-                _bots = _geneticAlgorithm.GenerateNewGeneration(survivors, GameField.Width, GameField.Height, _generation, GameField);
+                _bots = _geneticAlgorithm.GenerateNewGeneration(survivors, GameField.width, GameField.height, _generation, GameField);
 
                 // Фиксируем вымирание генов, если они исчезли
                 MarkExtinctGenomes(previousBots);

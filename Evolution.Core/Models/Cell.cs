@@ -1,5 +1,8 @@
 ﻿namespace Evolution.Core.Models
 {
+    /// <summary>
+    /// Представляет тип клетки на поле.
+    /// </summary>
     public enum CellType
     {
         /// <summary>
@@ -24,33 +27,45 @@
         Bot
     }
 
+    /// <summary>
+    /// Представляет клетку на поле.
+    /// </summary>
     public class Cell
     {
-        public CellType Type { get => GetCellType(Content); }
-        public object? Content { get ; private set; }
+        /// <summary>
+        /// Получает тип клетки на основе её содержимого.
+        /// </summary>
+        public CellType Type => GetCellType(Content);
 
-        public Cell(object content = null)
+        /// <summary>
+        /// Получает содержимое клетки.
+        /// </summary>
+        public object? Content { get; set; }
+
+        /// <summary>
+        /// Инициализирует новый экземпляр класса <see cref="Cell"/> с указанным содержимым.
+        /// </summary>
+        /// <param name="content">Содержимое клетки.</param>
+        public Cell(object? content = null)
         {
             Content = content;
         }
 
-        public static CellType GetCellType(object content)
+        /// <summary>
+        /// Определяет тип клетки на основе её содержимого.
+        /// </summary>
+        /// <param name="content">Содержимое клетки.</param>
+        /// <returns>Тип клетки.</returns>
+        public static CellType GetCellType(object? content)
         {
-            if (content is not null)
+            return content switch
             {
-                if (content is Bot)
-                    return CellType.Bot;
-                else if (content is Wall)
-                    return CellType.Wall;
-                else if (content is Food)
-                    return CellType.Food;
-                else if (content is Poison)
-                    return CellType.Poison;
-                else
-                    return CellType.Empty;
-            }
-            else
-                return CellType.Empty;
+                Bot => CellType.Bot,
+                Wall => CellType.Wall,
+                Food => CellType.Food,
+                Poison => CellType.Poison,
+                _ => CellType.Empty,
+            };
         }
     }
 }

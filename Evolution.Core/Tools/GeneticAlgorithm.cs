@@ -51,8 +51,8 @@ namespace Evolution.Core
             int x, y;
             do
             {
-                x = Random.Shared.Next(GameField.Width);
-                y = Random.Shared.Next(GameField.Height);
+                x = Random.Shared.Next(GameField.width);
+                y = Random.Shared.Next(GameField.height);
             }
             while (field.Cells[x, y].Bot != null); // Проверяем, чтобы бот не появился на другом боте
 

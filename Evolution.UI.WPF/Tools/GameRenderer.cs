@@ -21,9 +21,9 @@ namespace Evolution.UI.WPF
             {
                 _canvas.Children.Clear();
 
-                for (int x = 0; x < GameField.Width; x++)
+                for (int x = 0; x < GameField.width; x++)
                 {
-                    for (int y = 0; y < GameField.Height; y++)
+                    for (int y = 0; y < GameField.height; y++)
                     {
                         DrawCell(x, y, field.Cells[x, y]);
                     }

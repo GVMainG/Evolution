@@ -2,21 +2,21 @@
 {
     public class GameField
     {
-        public const int Width = 64;
-        public const int Height = 64;
+        public readonly int width = 64;
+        public readonly int height = 64;
         public Cell[,] Cells { get; set; }
 
         public GameField()
         {
-            Cells = new Cell[Width, Height];
+            Cells = new Cell[width, height];
             Initialize();
         }
 
         private void Initialize()
         {
-            for (int x = 0; x < Width; x++)
+            for (int x = 0; x < width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (int y = 0; y < height; y++)
                 {
                     Cells[x, y] = new Cell(CellType.Empty);
                 }
@@ -38,7 +38,7 @@
 
         public bool IsValidPosition(int x, int y)
         {
-            return x >= 0 && x < Width && y >= 0 && y < Height;
+            return x >= 0 && x < width && y >= 0 && y < height;
         }
     }
 }

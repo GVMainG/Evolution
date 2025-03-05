@@ -8,5 +8,8 @@ namespace Evolution.Core.Models
 {
     public class Food
     {
+        public int NutritionalValue { get; set; }
+
+        public Food(int nutritionalValue = 11) { NutritionalValue = nutritionalValue; }
     }
 }
