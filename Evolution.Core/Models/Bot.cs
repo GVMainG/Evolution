@@ -231,7 +231,7 @@ namespace Evolution.Core.Models
             if (field.IsValidPosition(newPosition.x, newPosition.y) &&
                 field.Cells[newPosition.x, newPosition.y].Type == CellType.Poison)
             {
-                field.Cells[newPosition.x, newPosition.y].Content = new Food(6);
+                 field.Cells[newPosition.x, newPosition.y].Content = new Food(6);
             }
         }
 

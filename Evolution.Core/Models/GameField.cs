@@ -6,9 +6,11 @@
         public readonly int height = 64;
         public Cell[,] Cells { get; set; }
 
-        public GameField()
+        public GameField(int width, int height)
         {
-            Cells = new Cell[width, height];
+            this.width = width;
+            this.height = height;
+            Cells = new Cell[this.width, this.height];
             Initialize();
         }
 
@@ -18,16 +20,16 @@
             {
                 for (int y = 0; y < height; y++)
                 {
-                    Cells[x, y] = new Cell(CellType.Empty);
+                    Cells[x, y] = new Cell();
                 }
             }
         }
 
-        public void SetCell(int x, int y, CellType type)
+        public void SetCell(int x, int y, object obj)
         {
             if (IsValidPosition(x, y))
             {
-                Cells[x, y].Type = type;
+                Cells[x, y].Content = obj;
             }
         }
 
