@@ -1,4 +1,4 @@
-﻿namespace Evolution.Core.Models
+﻿namespace Evolution.Core.Entities
 {
     /// <summary>
     /// Представляет тип клетки на поле.
