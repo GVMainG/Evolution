@@ -12,9 +12,9 @@ namespace Evolution.Core.Tools
             int currentFoodCount = 0;
 
             // Считаем текущую еду на поле
-            for (int x = 0; x < GameField.width; x++)
+            for (int x = 0; x < field.width; x++)
             {
-                for (int y = 0; y < GameField.height; y++)
+                for (int y = 0; y < field.height; y++)
                 {
                     if (field.Cells[x, y].Type == CellType.Food)
                     {
@@ -28,12 +28,12 @@ namespace Evolution.Core.Tools
 
             while (spawned < foodToSpawn)
             {
-                int x = Random.Next(GameField.width);
-                int y = Random.Next(GameField.height);
+                int x = Random.Next(field.width);
+                int y = Random.Next(field.height);
 
                 if (field.Cells[x, y].Type == CellType.Empty)
                 {
-                    field.Cells[x, y].Type = CellType.Food;
+                    field.Cells[x, y].Content = new Food();
                     spawned++;
                 }
             }

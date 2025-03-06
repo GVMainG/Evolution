@@ -8,71 +8,59 @@ namespace Evolution.Core
 
         public List<Bot> SelectSurvivors(List<Bot> bots)
         {
-            return bots.OrderByDescending(b => b.Genome.GenerationsSurvived).Take(10).ToList();
+            return bots.OrderByDescending(b => b.Energy).Take(10).ToList();
         }
 
-        public List<Bot> GenerateNewGeneration(List<Bot> survivors, int fieldWidth, int fieldHeight, int currentGeneration,
+        public List<Bot> NewGeneration(IEnumerable<Bot> survivors, int fieldWidth, int fieldHeight, int currentGeneration,
             GameField field)
         {
-            List<Bot> newGeneration = new();
+            List<Bot> newGeneration = [];
 
             foreach (var survivor in survivors)
             {
                 for (int i = 0; i < 3; i++)
                 {
-                    newGeneration.Add(CloneBot(survivor, fieldWidth, fieldHeight));
+                    newGeneration.Add(CloneBot(survivor, fieldWidth, fieldHeight, currentGeneration));
                 }
 
                 newGeneration.Add(CreateRandomBot(field, currentGeneration));
-                newGeneration.Add(CreateMutant(survivor, fieldWidth, fieldHeight, currentGeneration));
+                newGeneration.Add(CreateMutant(field, survivor, fieldWidth, fieldHeight, currentGeneration));
             }
 
             return newGeneration;
         }
 
-        private Bot CloneBot(Bot parent, int fieldWidth, int fieldHeight)
+        private Bot CloneBot(Bot parent, int fieldWidth, int fieldHeight, int currentGeneration)
         {
-            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight), parent.Genome);
+            return new Bot((Random.Next(fieldWidth), Random.Next(fieldHeight)), currentGeneration, parent.Genome);
         }
 
         private Bot CreateRandomBot(GameField field, int currentGeneration)
         {
-            // Генерируем случайный ген
-            int[] randomGenes = new int[64];
-            for (int i = 0; i < randomGenes.Length; i++)
-            {
-                randomGenes[i] = Random.Shared.Next(64);
-            }
-
-            // Создаём новый объект Genome с указанием поколения создания
-            Genome newGenome = new Genome(randomGenes, currentGeneration);
-
-            // Ищем свободную клетку для размещения
-            int x, y;
-            do
-            {
-                x = Random.Shared.Next(GameField.width);
-                y = Random.Shared.Next(GameField.height);
-            }
-            while (field.Cells[x, y].Bot != null); // Проверяем, чтобы бот не появился на другом боте
-
-            return new Bot(x, y, newGenome);
+            (int x, int y) xy = FindEmptyCell(field);
+            return new Bot(xy, currentGeneration, new(currentGeneration));
         }
 
-
-
-        private Bot CreateMutant(Bot parent, int fieldWidth, int fieldHeight, int currentGeneration)
+        public static (int x, int y) FindEmptyCell(GameField field)
         {
-            int[] mutantGenes = (int[])parent.Genome.Genes.Clone();
-
-            for (int i = 0; i < 5; i++)
+            (int x, int y) xy = (0, 0);
+            while (true)
             {
-                int mutationIndex = Random.Next(64);
-                mutantGenes[mutationIndex] = Random.Next(64);
+                xy.x = Random.Next(field.width);
+                xy.y = Random.Next(field.height);
+                if (field.Cells[xy.x, xy.y].Type == CellType.Empty)
+                {
+                    return xy;
+                }
             }
+        }
 
-            Genome mutatedGenome = new Genome(mutantGenes, currentGeneration);
-            return new Bot(Random.Next(fieldWidth), Random.Next(fieldHeight), mutatedGenome);
+        private Bot CreateMutant(GameField field, Bot parent, int width, int height, int currentGeneration)
+        {
+            var mutantGenes = new Genome(currentGeneration, parent.Genome.Mutation(currentGeneration, 1));
+            (int x, int y) xy = FindEmptyCell(field);
+
+            return new Bot(xy, currentGeneration, mutantGenes);
         }
     }
 }

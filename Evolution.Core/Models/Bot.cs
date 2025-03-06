@@ -54,6 +54,7 @@ namespace Evolution.Core.Models
         /// Событие, возникающее при смерти бота.
         /// </summary>
         public event ActionBot Died;
+        public event Action<(int oldX, int oldY), (int newX, int newY)>? Moved;
 
         /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="Bot"/> с указанной позицией, поколением создания, геномом и уровнем энергии.
@@ -114,19 +115,48 @@ namespace Evolution.Core.Models
         /// <param name="newPosition">Новая позиция бота.</param>
         private void Move(GameField field, (int x, int y)? newPosition = null)
         {
-            newPosition = newPosition ?? CalculatingFrontPosition();
+            var oldPosition = Position;
+            newPosition ??= CalculatingFrontPosition();
 
-            // Проверяем, является ли новая позиция допустимой и не является ли она стеной
-            if (field.IsValidPosition(newPosition.Value.x, newPosition.Value.y) &&
-                field.Cells[newPosition.Value.x, newPosition.Value.y].Type != CellType.Wall &&
-                field.Cells[newPosition.Value.x, newPosition.Value.y].Type != CellType.Bot)
+            if (!CheckPathClear(field, oldPosition, newPosition.Value))
             {
-                Position = newPosition.Value;
-                field.Cells[Position.x, Position.y].Content = this;
-
-                // Дополнительный расход энергии за движение.
-                Energy -= 2;
+                return;
             }
+
+            field.Cells[oldPosition.x, oldPosition.y].Content = null;
+            field.Cells[newPosition.Value.x, newPosition.Value.y].Content = this;
+
+            Position = newPosition.Value;
+            Energy -= 2;
+
+            // Вызов события о перемещении
+            Moved?.Invoke(oldPosition, Position);
+        }
+
+        /// <summary>
+        /// Проверяет, свободен ли путь между начальной и конечной позицией бота.
+        /// </summary>
+        /// <param name="field">Игровое поле.</param>
+        /// <param name="start">Начальная позиция.</param>
+        /// <param name="end">Конечная позиция.</param>
+        /// <returns>True, если путь чист, False, если есть препятствие.</returns>
+        private bool CheckPathClear(GameField field, (int x, int y) start, (int x, int y) end)
+        {
+            int dx = Math.Sign(end.x - start.x);
+            int dy = Math.Sign(end.y - start.y);
+
+            int x = start.x, y = start.y;
+            while (x != end.x || y != end.y)
+            {
+                x += dx;
+                y += dy;
+
+                if (!field.IsValidPosition(x, y) || field.Cells[x, y].Type == CellType.Wall)
+                {
+                    return false; // Если на пути стена, то нельзя двигаться
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -160,11 +190,15 @@ namespace Evolution.Core.Models
         private void GrabFood(GameField field)
         {
             var newPosition = CalculatingFrontPosition();
+            if (!field.IsValidPosition(newPosition.x, newPosition.y))
+                return;
+
             var cell = field.Cells[newPosition.x, newPosition.y];
             if (cell.Content is not null && cell.Type == CellType.Food)
             {
+                var food = ((Food)cell.Content).NutritionalValue;
                 Move(field, newPosition);
-                Energy += ((Food)cell.Content).NutritionalValue;
+                Energy += food;
             }
         }
 
@@ -199,6 +233,8 @@ namespace Evolution.Core.Models
                         break;
                 }
             }
+
+            Energy -= 2;
 
             ExecuteNextCommand(field);
         }

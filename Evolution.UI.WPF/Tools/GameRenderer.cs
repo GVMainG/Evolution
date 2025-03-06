@@ -1,4 +1,5 @@
 ﻿using Evolution.Core.Models;
+using Evolution.Core.Tools;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -9,10 +10,24 @@ namespace Evolution.UI.WPF
     {
         private readonly Canvas _canvas;
         private const int CellSize = 10;
+        private GameField _field;
 
-        public GameRenderer(Canvas canvas)
+        public GameRenderer(Canvas canvas, GameLoop gameLoop)
         {
             _canvas = canvas;
+            _field = gameLoop.GameField;
+
+            // Подписываем всех существующих ботов
+            foreach (var bot in gameLoop.Bots)
+            {
+                bot.Moved += RenderCellChange;
+            }
+
+            // Подписываем новых ботов при создании
+            gameLoop.OnBotCreated += bot =>
+            {
+                bot.Moved += RenderCellChange;
+            };
         }
 
         public void Render(GameField field)
@@ -21,15 +36,24 @@ namespace Evolution.UI.WPF
             {
                 _canvas.Children.Clear();
 
-                for (int x = 0; x < GameField.width; x++)
+                for (int x = 0; x < field.width; x++)
                 {
-                    for (int y = 0; y < GameField.height; y++)
+                    for (int y = 0; y < field.height; y++)
                     {
                         DrawCell(x, y, field.Cells[x, y]);
                     }
                 }
 
-                _canvas.UpdateLayout(); // Принудительное обновление UI
+                _canvas.UpdateLayout();
+            });
+        }
+
+        public void RenderCellChange((int oldX, int oldY) oldPos, (int newX, int newY) newPos)
+        {
+            _canvas.Dispatcher.Invoke(() =>
+            {
+                DrawCell(oldPos.oldX, oldPos.oldY, _field.Cells[oldPos.oldX, oldPos.oldY]);
+                DrawCell(newPos.newX, newPos.newY, _field.Cells[newPos.newX, newPos.newY]);
             });
         }
 
@@ -50,8 +74,17 @@ namespace Evolution.UI.WPF
 
         private Brush GetCellColor(Cell cell)
         {
-            // Если в клетке есть бот, он должен быть виден поверх других объектов
-            if (cell.Bot != null) return Brushes.Blue;
+            if (cell.Content is Bot bot)
+            {
+                if (bot.Energy > 0)
+                {
+                    return Brushes.Blue; // Живой бот
+                }
+                else
+                {
+                    return Brushes.White; // Мертвый бот (убираем его с карты)
+                }
+            }
 
             return cell.Type switch
             {

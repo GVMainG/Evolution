@@ -1,9 +1,6 @@
-﻿using System;
+﻿using Evolution.Core.Tools;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Threading;
-using Evolution.Core;
-using Evolution.Core.Tools;
 
 namespace Evolution.UI.WPF
 {
@@ -17,7 +14,7 @@ namespace Evolution.UI.WPF
         {
             InitializeComponent();
             _gameLoop = new GameLoop();
-            _renderer = new GameRenderer(GameCanvas);
+            _renderer = new GameRenderer(GameCanvas, _gameLoop);
             _gameLoop.OnGameUpdated += UpdateUI;
 
             _timer = new DispatcherTimer();
@@ -38,10 +35,9 @@ namespace Evolution.UI.WPF
             _renderer.Render(_gameLoop.GameField);
         }
 
-        private void UpdateUI(int generation, int botCount)
+        private void UpdateUI(int generation)
         {
             GenerationText.Text = $"Поколение: {generation}";
-            BotCountText.Text = $"Боты: {botCount}";
         }
 
         private void SpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
