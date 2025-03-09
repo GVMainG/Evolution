@@ -40,7 +40,9 @@
         /// <summary>
         /// Получает содержимое клетки.
         /// </summary>
-        public object? Content { get; set; }
+        public object? Content { get => Content; set { Content = value; CellChanged.Invoke(this); } }
+
+        public event Action<Cell> CellChanged;
 
         /// <summary>
         /// Инициализирует новый экземпляр класса <see cref="Cell"/> с указанным содержимым.
