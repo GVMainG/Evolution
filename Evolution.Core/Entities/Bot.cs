@@ -1,4 +1,6 @@
-﻿namespace Evolution.Core.Entities
+﻿using Evolution.Core.Infrastructure;
+
+namespace Evolution.Core.Entities
 {
     public class Bot
     {
@@ -55,7 +57,7 @@
         public int CommandIndex
         {
             get => _commandIndex;
-            private set
+            set
             {
                 _commandIndex = value;
                 if (_commandIndex >= Genome.GeneticCode.Length)
@@ -85,6 +87,51 @@
             }
 
             return newPosition;
+        }
+
+        /// <summary>
+        /// Выполняет следующую команду в геноме бота.
+        /// </summary>
+        /// <param name="field">Игровое поле, на котором действует бот.</param>
+        public void ExecuteNextCommand(FieldBase field)
+        {
+            int command = Genome.GeneticCode[CommandIndex];
+
+            // Определяем действие на основе значения команды.
+            if (command >= 0 && command <= 7)
+            {
+                Commands.Move(this);
+                Energy -= 1;
+            }
+            else if (command >= 8 && command <= 15)
+            {
+                Commands.GrabFood(field, this);
+                Energy -= 2;
+            }
+            else if (command >= 16 && command <= 18)
+            {
+                Commands.LookAhead(field, this);
+                Energy -= 2;
+            }
+            else if (command >= 19 && command <= 26)
+            {
+                Commands.Turn(26 - 19, command, this);
+                Energy -= 1;
+            }
+            else if (command >= 27 && command <= 30)
+            {
+                Commands.ConvertPoison(field, this);
+                Energy -= 1;
+            }
+            else if (command >= 31 && command <= 63)
+            {
+                Commands.Jump(this, command);
+                Energy -= 1;
+            }
+            else
+            {
+                Energy -= 1;
+            }
         }
     }
 }

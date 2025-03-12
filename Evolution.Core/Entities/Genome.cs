@@ -30,6 +30,11 @@
             Parent = parent;
         }
 
+        public Bot CreateBot(long generation, (int x, int y) position)
+        {
+            return new Bot(this, generation, position, 15);
+        }
+
         /// <summary>
         /// Создаёт случайный геном.
         /// </summary>
