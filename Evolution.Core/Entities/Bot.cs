@@ -31,6 +31,9 @@ namespace Evolution.Core.Entities
             get => _position;
             set
             {
+                if (value.x < 0 || value.y < 0)
+                    return;
+
                 OnMoveAttempt?.Invoke(this, value); // Уведомляем игровое поле
 
                 var old = _position;
@@ -49,6 +52,9 @@ namespace Evolution.Core.Entities
 
         public Bot(Genome genome, long generationCreation, (int x, int y) position, int energy = 25)
         {
+            if (genome == null)
+                throw new ArgumentNullException(nameof(genome), "Genome cannot be null");
+
             id = Guid.NewGuid();
             Genome = genome;
             Energy = energy;
@@ -56,6 +62,7 @@ namespace Evolution.Core.Entities
             Position = position;
             Facing = (Direction)Random.Shared.Next(0, 8);
         }
+
 
         /// <summary>
         /// Получает текущий индекс команды в геноме.
@@ -101,6 +108,15 @@ namespace Evolution.Core.Entities
         /// <param name="field">Игровое поле, на котором действует бот.</param>
         public void ExecuteNextCommand(FieldBase field, int i = 0)
         {
+            if (field == null)
+                throw new ArgumentNullException(nameof(field), "FieldBase cannot be null");
+
+            if (Genome == null || Genome.GeneticCode == null)
+            {
+                Console.WriteLine($"❌ Ошибка: Бот {id} имеет `null`-геном!");
+                return;
+            }
+
             int command = Genome.GeneticCode[CommandIndex];
 
             // Определяем действие на основе значения команды.

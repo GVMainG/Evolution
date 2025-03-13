@@ -1,5 +1,6 @@
 ﻿using Evolution.Core.Config;
 using Evolution.Core.Entities;
+using System.Runtime.InteropServices;
 
 namespace Evolution.Core.Infrastructure
 {
@@ -64,22 +65,22 @@ namespace Evolution.Core.Infrastructure
         /// </summary>
         private void ExecuteTurn()
         {
-            foreach (var bot in _field.Bots.ToArray())
+            foreach (var bot in _field.Bots.ToArray()) // 🔹 Копируем список перед итерацией
             {
+                if (bot == null)
+                {
+                    continue;
+                }
+
                 bot.ExecuteNextCommand(_field);
+
                 if (EvolutionManager.CheckAndEvolve())
                     break;
             }
 
-            
             _field.Update();
-
-            // Сообщаем рендеру о новых ботах
-            foreach (var bot in _field.Bots)
-            {
-                OnBotCreated?.Invoke(bot);
-            }
         }
+
 
         /// <summary>
         /// Изменяет скорость игры.

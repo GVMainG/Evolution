@@ -1,0 +1,22 @@
+﻿<UserControl x:Class="Evolution.UI.WPF.Views.UC.SimulationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:prism="http://prismlibrary.com/"
+             xmlns:vm="clr-namespace:Evolution.UI.WPF.ViewModels"
+             prism:ViewModelLocator.AutoWireViewModel="True">
+
+    <Grid>
+        <ItemsControl ItemsSource="{Binding Cells}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Columns="64"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Rectangle Width="10" Height="10" Fill="{Binding Color}" Stroke="Black"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

@@ -70,7 +70,6 @@ namespace Evolution.Core.Infrastructure
             bot.Position = position;
 
             bot.OnDeath += HandleBotDeath; // Подписываемся на смерть бота
-            //bot.OnPosition += HandleBotMove;
             bot.OnMoveAttempt += HandleBotMoveAttempt;
 
             Bots.Add(bot);
@@ -97,27 +96,20 @@ namespace Evolution.Core.Infrastructure
 
         private void HandleBotDeath(Bot bot)
         {
-            // Проверяем, что позиция бота находится в пределах поля перед удалением
+            if (bot == null) return;
+
+            // Удаляем бота из клетки
             if (IsValidPosition(bot.Position.x, bot.Position.y))
             {
-                Cells[bot.Position.x, bot.Position.y].Content = null;
-                Bots.Remove(bot);
-            }
-        }
-
-        private void HandleBotMove((int x, int y) oldPos, (int x, int y) newPos)
-        {
-            // Проверяем, находится ли новая позиция в пределах поля
-            if (!IsValidPosition(newPos.x, newPos.y))
-            {
-                return; // Отменяем перемещение
+                if (Cells[bot.Position.x, bot.Position.y].Content is Bot)
+                {
+                    Cells[bot.Position.x, bot.Position.y].Content = null;
+                }
             }
 
-            // Обновляем поле: очищаем старую клетку, перемещаем бота
-            Cells[oldPos.x, oldPos.y].Content = null;
-            Cells[newPos.x, newPos.y].Content = Bots.FirstOrDefault(b => b.Position == newPos);
+            // Удаляем бота из списка
+            Bots.Remove(bot);
         }
-
 
         public void SpawnFood()
         {
