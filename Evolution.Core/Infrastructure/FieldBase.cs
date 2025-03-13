@@ -18,6 +18,8 @@ namespace Evolution.Core.Infrastructure
 
         public event Action<Bot> OnBotSpawn;
         public event Action<(int x, int y)> OnFoodSpawn;
+        public event Action? OnBotListUpdated;
+
 
         public FieldBase(GameConfig config)
         {
@@ -68,13 +70,30 @@ namespace Evolution.Core.Infrastructure
             bot.Position = position;
 
             bot.OnDeath += HandleBotDeath; // Подписываемся на смерть бота
-            bot.OnPosition += HandleBotMove;
+            //bot.OnPosition += HandleBotMove;
+            bot.OnMoveAttempt += HandleBotMoveAttempt;
 
             Bots.Add(bot);
             Cells[position.x, position.y].Content = bot;
 
             OnBotSpawn?.Invoke(bot);
+            OnBotListUpdated?.Invoke(); // Сообщаем UI, что список ботов изменился
         }
+
+        private void HandleBotMoveAttempt(Bot bot, (int x, int y) newPos)
+        {
+            if (!IsValidPosition(newPos.x, newPos.y)) // Если позиция вне границ
+            {
+                Console.WriteLine($"❌ Бот {bot.id} пытался выйти за границы: {newPos}, возвращаем на место.");
+                return; // Поле блокирует движение, бот остаётся на месте
+            }
+
+            // Если позиция допустима, обновляем ячейки
+            var oldPos = bot.Position;
+            Cells[oldPos.x, oldPos.y].Content = null;
+            Cells[newPos.x, newPos.y].Content = bot;
+        }
+
 
         private void HandleBotDeath(Bot bot)
         {
@@ -124,8 +143,8 @@ namespace Evolution.Core.Infrastructure
             int x, y;
             do
             {
-                x = _random.Next(Width);
-                y = _random.Next(Height);
+                x = _random.Next(Width-1);
+                y = _random.Next(Height-1);
             } while (Cells[x, y].Content != null);
 
             return (x, y);

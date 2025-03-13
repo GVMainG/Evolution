@@ -5,15 +5,14 @@
         WindowStartupLocation="CenterScreen">
 
     <Grid>
-        <!-- Игровое поле -->
-        <Canvas Name="GameCanvas" Background="White" MouseLeftButtonDown="GameCanvas_MouseLeftButtonDown"/>
+        <Grid>
+            <!-- Список ботов -->
+            <ListBox Name="BotList" Width="200" HorizontalAlignment="Left"
+                 SelectionChanged="BotList_SelectionChanged"/>
 
-        <!-- Отображение информации о боте -->
-        <StackPanel VerticalAlignment="Top" Background="LightGray">
-            <TextBlock Text="Информация о боте:" FontWeight="Bold"/>
-            <TextBlock Name="BotPositionText" Text="Позиция: -" />
-            <TextBlock Name="BotFacingText" Text="Направление: -" />
-        </StackPanel>
+            <!-- Игровое поле -->
+            <Canvas Name="GameCanvas" Background="White" Margin="200,0,0,0"/>
+        </Grid>
 
         <!-- Панель управления (внизу) -->
         <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Background="LightGray" Height="50">

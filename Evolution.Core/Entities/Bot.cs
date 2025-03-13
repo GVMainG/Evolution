@@ -31,6 +31,8 @@ namespace Evolution.Core.Entities
             get => _position;
             set
             {
+                OnMoveAttempt?.Invoke(this, value); // Уведомляем игровое поле
+
                 var old = _position;
                 _position = value;
                 OnPosition?.Invoke((old.x, old.y), (_position.x, _position.y));
@@ -42,6 +44,8 @@ namespace Evolution.Core.Entities
         public event Action<Bot> OnDeath;
         public event Action<int> OnEnergy;
         public event Action<(int x, int y), (int x, int y)> OnPosition;
+        public event Action<Bot>? OnCommandExecuted;
+        public event Action<Bot, (int x, int y)>? OnMoveAttempt;
 
         public Bot(Genome genome, long generationCreation, (int x, int y) position, int energy = 25)
         {
@@ -134,6 +138,9 @@ namespace Evolution.Core.Entities
             {
                 Energy -= 20;
             }
+            CommandIndex++;
+            // Уведомляем подписчиков (BotInfoWindow)
+            OnCommandExecuted?.Invoke(this);
         }
     }
 }

@@ -1,9 +1,13 @@
 ﻿using Evolution.Core.Config;
 using Evolution.Core.Entities;
 using Evolution.Core.Infrastructure;
+using Evolution.UI.WPF.Views;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace Evolution.UI.WPF
 {
@@ -13,7 +17,8 @@ namespace Evolution.UI.WPF
         private GameRenderer _renderer;
         private GameConfig _config;
         private const int CellSize = 10; // Размер одной клетки
-        private Bot? _selectedBot; // Текущий бот, за которым следим
+        private Bot? _selectedBot; // Бот, которого отслеживаем
+        private BotInfoWindow? _botInfoWindow; // Окно информации о боте
 
         public MainWindow()
         {
@@ -31,48 +36,103 @@ namespace Evolution.UI.WPF
             {
                 Dispatcher.Invoke(() => GenerationText.Text = $"Поколение: {gen}");
             };
+
+            LoadBotList(); // Загружаем ботов в список
+
+            _gameLoop.EvolutionManager.OnGenerationChange += (gen) =>
+            {
+                Dispatcher.Invoke(LoadBotList);
+            };
+
+            _gameLoop.GameField.OnBotListUpdated += UpdateBotList; // Подписываемся на событие
         }
 
-        private void UpdateBotInfo((int x, int y) oldPos, (int x, int y) newPos)
+        private void LoadBotList()
         {
-            if (_selectedBot == null) return;
-
-            Dispatcher.Invoke(() =>
+            BotList.Items.Clear();
+            foreach (var bot in _gameLoop.GameField.Bots)
             {
-                BotPositionText.Text = $"Позиция: ({_selectedBot.Position.x}, {_selectedBot.Position.y})";
-                BotFacingText.Text = $"Направление: {_selectedBot.Facing}";
-            });
-
-            Console.WriteLine($"🔄 Обновлены данные бота: ({_selectedBot.Position.x}, {_selectedBot.Position.y}), направление: {_selectedBot.Facing}");
-        }
-
-
-        private void GameCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var mousePosition = e.GetPosition(GameCanvas);
-            int x = (int)(mousePosition.X / CellSize);
-            int y = (int)(mousePosition.Y / CellSize);
-
-            var clickedCell = _gameLoop.GameField.Cells[x, y];
-
-            if (clickedCell.Content is Bot bot)
-            {
-                // Если бот уже выбран — убираем старую подписку
-                if (_selectedBot != null)
-                {
-                    _selectedBot.OnPosition -= UpdateBotInfo;
-                }
-
-                // Назначаем нового бота
-                _selectedBot = bot;
-                _selectedBot.OnPosition += UpdateBotInfo;
-
-                // Сразу обновляем UI
-                UpdateBotInfo(bot.Position, bot.Position);
-
-                Console.WriteLine($"👆 Выбран бот: ({bot.Position.x}, {bot.Position.y}), направление: {bot.Facing}");
+                BotList.Items.Add(bot);
             }
         }
+
+        private void BotList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_botInfoWindow != null)
+            {
+                _botInfoWindow.Close();
+                _botInfoWindow = null;
+            }
+
+            if (_selectedBot != null)
+            {
+                _selectedBot.OnPosition -= UpdateBotHighlight;
+                _selectedBot.OnDeath -= CloseBotWindow; // Отписываемся от смерти старого бота
+            }
+
+            if (BotList.SelectedItem is Bot selectedBot)
+            {
+                _selectedBot = selectedBot;
+                _selectedBot.OnPosition += UpdateBotHighlight;
+                _selectedBot.OnDeath += CloseBotWindow; // Подписываемся на удаление бота
+
+                _botInfoWindow = new BotInfoWindow(selectedBot);
+                _botInfoWindow.Show();
+
+                UpdateBotHighlight(selectedBot.Position, selectedBot.Position);
+            }
+        }
+
+        private void UpdateBotList()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                BotList.Items.Clear();
+                foreach (var bot in _gameLoop.GameField.Bots)
+                {
+                    BotList.Items.Add(bot);
+                }
+            });
+        }
+
+        private void CloseBotWindow(Bot bot)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_botInfoWindow != null)
+                {
+                    _botInfoWindow.Close();
+                    _botInfoWindow = null;
+                }
+
+                Console.WriteLine($"❌ Окно отслеживания закрыто: бот ({bot.Position.x}, {bot.Position.y}) умер.");
+            });
+        }
+
+
+        private void UpdateBotHighlight((int x, int y) oldPos, (int x, int y) newPos)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Удаляем старую подсветку
+                GameCanvas.Children.RemoveRange(GameCanvas.Children.Count - 1, 1);
+
+                // Создаём рамку вокруг бота
+                Rectangle highlight = new()
+                {
+                    Width = CellSize,
+                    Height = CellSize,
+                    Stroke = Brushes.Yellow,
+                    StrokeThickness = 2
+                };
+
+                Canvas.SetLeft(highlight, newPos.x * CellSize);
+                Canvas.SetTop(highlight, newPos.y * CellSize);
+
+                GameCanvas.Children.Add(highlight);
+            });
+        }
+
 
         /// <summary>
         /// Запускает игру.
