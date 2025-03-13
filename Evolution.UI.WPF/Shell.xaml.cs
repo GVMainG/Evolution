@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 
 namespace Evolution.UI.WPF
 {
-    public partial class MainWindow : Window
+    public partial class Shell : Window
     {
         private GameLoop _gameLoop;
         private GameRenderer _renderer;
@@ -20,7 +20,7 @@ namespace Evolution.UI.WPF
         private Bot? _selectedBot; // Бот, которого отслеживаем
         private BotInfoWindow? _botInfoWindow; // Окно информации о боте
 
-        public MainWindow()
+        public Shell()
         {
             InitializeComponent();
 
