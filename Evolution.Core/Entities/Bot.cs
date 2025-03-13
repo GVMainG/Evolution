@@ -8,6 +8,7 @@ namespace Evolution.Core.Entities
         private (int x, int y) _position;
         private int _energy;
         private int _commandIndex;
+        private Direction facing;
         public readonly long generationCreation;
 
         public int Energy 
@@ -17,8 +18,8 @@ namespace Evolution.Core.Entities
             {
                 _energy = value;
 
-                if(_energy > 0)
-                    OnEnergy.Invoke(_energy);
+                //if(_energy > 0)
+                //    OnEnergy.Invoke(_energy);
 
                 if (_energy <= 0)
                     OnDeath.Invoke(this);
@@ -32,11 +33,11 @@ namespace Evolution.Core.Entities
             {
                 var old = _position;
                 _position = value;
-                OnPosition.Invoke((old.x, old.y), (_position.x, _position.y));
+                OnPosition?.Invoke((old.x, old.y), (_position.x, _position.y));
             } 
         }
 
-        public Direction Facing { get; set; }
+        public Direction Facing { get => facing; set => facing = value; }
 
         public event Action<Bot> OnDeath;
         public event Action<int> OnEnergy;
@@ -49,6 +50,7 @@ namespace Evolution.Core.Entities
             Energy = energy;
             this.generationCreation = generationCreation;
             Position = position;
+            Facing = (Direction)Random.Shared.Next(0, 8);
         }
 
         /// <summary>
@@ -76,10 +78,10 @@ namespace Evolution.Core.Entities
             // Вычисляем новую позицию на основе направления, в котором смотрит бот
             switch (Facing)
             {
-                case Direction.N: newPosition.y++; break;
-                case Direction.S: newPosition.y--; break;
-                case Direction.W: newPosition.x--; break;
-                case Direction.E: newPosition.x++; break;
+                case Direction.N: newPosition.y--; break; // Должно уменьшаться (↑ вверх)
+                case Direction.S: newPosition.y++; break; // Должно увеличиваться (↓ вниз)
+                case Direction.W: newPosition.x--; break; // ← влево
+                case Direction.E: newPosition.x++; break; // → вправо
                 case Direction.NW: newPosition.y--; newPosition.x--; break;
                 case Direction.NE: newPosition.y--; newPosition.x++; break;
                 case Direction.SW: newPosition.y++; newPosition.x--; break;
@@ -93,14 +95,14 @@ namespace Evolution.Core.Entities
         /// Выполняет следующую команду в геноме бота.
         /// </summary>
         /// <param name="field">Игровое поле, на котором действует бот.</param>
-        public void ExecuteNextCommand(FieldBase field)
+        public void ExecuteNextCommand(FieldBase field, int i = 0)
         {
             int command = Genome.GeneticCode[CommandIndex];
 
             // Определяем действие на основе значения команды.
             if (command >= 0 && command <= 7)
             {
-                Commands.Move(this);
+                Commands.Turn(command, this);
                 Energy -= 1;
             }
             else if (command >= 8 && command <= 15)
@@ -110,13 +112,13 @@ namespace Evolution.Core.Entities
             }
             else if (command >= 16 && command <= 18)
             {
-                Commands.LookAhead(field, this);
-                Energy -= 2;
+                Commands.LookAhead(field, this, i);
+                Energy -= 3;
             }
             else if (command >= 19 && command <= 26)
             {
-                Commands.Turn(26 - 19, command, this);
-                Energy -= 1;
+                Commands.Move(this);
+                Energy -= 3;
             }
             else if (command >= 27 && command <= 30)
             {
@@ -130,7 +132,7 @@ namespace Evolution.Core.Entities
             }
             else
             {
-                Energy -= 1;
+                Energy -= 20;
             }
         }
     }

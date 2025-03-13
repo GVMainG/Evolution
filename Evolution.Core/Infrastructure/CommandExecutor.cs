@@ -32,8 +32,15 @@ namespace Evolution.Core.Infrastructure
         /// Позволяет боту заглянуть вперед и скорректировать индекс команды на основе типа клетки.
         /// </summary>
         /// <param name="field">Игровое поле, на котором действует бот.</param>
-        public static void LookAhead(FieldBase field, Bot bot)
+        public static void LookAhead(FieldBase field, Bot bot, int i)
         {
+            if (i >= 3)
+                return;
+            else
+            {
+                i++;
+            }
+
             var newPosition = bot.CalculatingFrontPosition();
 
             // Корректируем индекс команды на основе типа клетки перед ботом
@@ -60,19 +67,14 @@ namespace Evolution.Core.Infrastructure
                 }
             }
 
-            bot.ExecuteNextCommand(field);
+            bot.ExecuteNextCommand(field, i);
         }
 
-        public static void Turn(int availableRange, int i, Bot bot)
+        public static void Turn(int i, Bot bot)
         {
-            if (availableRange < 8)
-            {
-                bot.Facing = (Direction)(((int)bot.Facing + 1) % 7);
-            }
-            else
-            {
-                bot.Facing = (Direction)(availableRange - i);
-            }
+            
+            bot.Facing = (Direction)i;
+            
         }
 
         /// <summary>

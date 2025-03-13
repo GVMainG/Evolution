@@ -1,4 +1,5 @@
-﻿namespace Evolution.Core.Entities
+﻿
+namespace Evolution.Core.Entities
 {
     /// <summary>
     /// Представляет тип клетки на поле.
@@ -32,6 +33,10 @@
     /// </summary>
     public class Cell
     {
+        private object? _content;
+
+        public Guid Id { get; set; } = Guid.NewGuid();
+
         /// <summary>
         /// Получает тип клетки на основе её содержимого.
         /// </summary>
@@ -40,7 +45,7 @@
         /// <summary>
         /// Получает содержимое клетки.
         /// </summary>
-        public object? Content { get => Content; set { Content = value; CellChanged.Invoke(this); } }
+        public object? Content { get => _content; set { _content = value; CellChanged?.Invoke(this); } }
 
         public event Action<Cell> CellChanged;
 
@@ -50,7 +55,7 @@
         /// <param name="content">Содержимое клетки.</param>
         public Cell(object? content = null)
         {
-            Content = content;
+            _content = content;
         }
 
         /// <summary>
@@ -68,6 +73,16 @@
                 Poison => CellType.Poison,
                 _ => CellType.Empty,
             };
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return Id == (obj as Cell)?.Id;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Content);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Evolution.Core.Infrastructure
 
         public List<Bot> Bots { get; private set; }
         public Cell[,] Cells { get; private set; }
+        private Dictionary<Guid, (int x, int y)> cellPositions = new();
 
         private Random _random = new();
 
@@ -37,10 +38,19 @@ namespace Evolution.Core.Infrastructure
             {
                 for (int y = 0; y < Height; y++)
                 {
-                    Cells[x, y] = new Cell();
+                    var cell = new Cell();
+                    Cells[x, y] = cell;
+                    cellPositions.Add(cell.Id, (x, y)); // Запоминаем координаты клетки
                 }
             }
         }
+
+
+        public (int x, int y) GetCellPosition(Cell cell)
+        {
+            return cellPositions.TryGetValue(cell.Id, out var pos) ? pos : throw new Exception("Клетка не найдена!");
+        }
+
 
         public bool IsValidPosition(int x, int y)
         {
@@ -57,7 +67,7 @@ namespace Evolution.Core.Infrastructure
             var position = GetRandomEmptyPosition();
             bot.Position = position;
 
-            bot.OnDeath += HandleBotDeath;
+            bot.OnDeath += HandleBotDeath; // Подписываемся на смерть бота
             bot.OnPosition += HandleBotMove;
 
             Bots.Add(bot);
@@ -68,19 +78,31 @@ namespace Evolution.Core.Infrastructure
 
         private void HandleBotDeath(Bot bot)
         {
-            Bots.Remove(bot);
-            Cells[bot.Position.x, bot.Position.y].Content = null;
+            // Проверяем, что позиция бота находится в пределах поля перед удалением
+            if (IsValidPosition(bot.Position.x, bot.Position.y))
+            {
+                Cells[bot.Position.x, bot.Position.y].Content = null;
+                Bots.Remove(bot);
+            }
         }
 
         private void HandleBotMove((int x, int y) oldPos, (int x, int y) newPos)
         {
+            // Проверяем, находится ли новая позиция в пределах поля
+            if (!IsValidPosition(newPos.x, newPos.y))
+            {
+                return; // Отменяем перемещение
+            }
+
+            // Обновляем поле: очищаем старую клетку, перемещаем бота
             Cells[oldPos.x, oldPos.y].Content = null;
             Cells[newPos.x, newPos.y].Content = Bots.FirstOrDefault(b => b.Position == newPos);
         }
 
+
         public void SpawnFood()
         {
-            int foodCount = Bots.Count * _config.FoodSpawnMultiplier;
+            int foodCount = (Bots.Count * _config.FoodSpawnMultiplier) - Cells.Cast<Cell>().Count(cell => cell.Type == CellType.Food);
             int spawned = 0;
 
             while (spawned < foodCount)

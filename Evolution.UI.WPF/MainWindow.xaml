@@ -1,15 +1,27 @@
 ﻿<Window x:Class="Evolution.UI.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Evolution" Height="800" Width="800">
-    <Grid>
-        <Canvas Name="GameCanvas" Width="640" Height="640" Background="White"/>
+        Title="Evolution Simulation" Height="850" Width="850"
+        WindowStartupLocation="CenterScreen">
 
-        <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10">
-            <TextBlock Name="GenerationText" FontSize="16" FontWeight="Bold"/>
-            <TextBlock Name="BotCountText" FontSize="16"/>
-            <Slider Name="SpeedSlider" Minimum="1" Maximum="100" Value="10" Width="200"/>
-            <Button Name="StartButton" Content="Start" Width="100" Click="StartButton_Click"/>
+    <Grid>
+        <!-- Игровое поле -->
+        <Canvas Name="GameCanvas" Background="White" MouseLeftButtonDown="GameCanvas_MouseLeftButtonDown"/>
+
+        <!-- Отображение информации о боте -->
+        <StackPanel VerticalAlignment="Top" Background="LightGray">
+            <TextBlock Text="Информация о боте:" FontWeight="Bold"/>
+            <TextBlock Name="BotPositionText" Text="Позиция: -" />
+            <TextBlock Name="BotFacingText" Text="Направление: -" />
+        </StackPanel>
+
+        <!-- Панель управления (внизу) -->
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Background="LightGray" Height="50">
+            <Button Name="StartButton" Content="Старт" Width="80" Click="StartButton_Click"/>
+            <Button Name="StopButton" Content="Стоп" Width="80" Click="StopButton_Click"/>
+            <TextBlock Text="Скорость:" VerticalAlignment="Center"/>
+            <Slider Name="SpeedSlider" Minimum="10" Maximum="1000" Value="100" Width="150" TickFrequency="10" ValueChanged="SpeedSlider_ValueChanged"/>
+            <TextBlock Name="GenerationText" Text="Поколение: 0" VerticalAlignment="Center" Margin="20,0,0,0"/>
         </StackPanel>
     </Grid>
 </Window>
