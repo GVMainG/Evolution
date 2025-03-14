@@ -29,8 +29,7 @@
                 <!-- Список ботов -->
             </Grid.ColumnDefinitions>
 
-            <local:SimulationControl Grid.Column="0"/>
-            <local:BotListControl Grid.Column="1"/>
+            <local:WorldView Grid.Column="0"/>
         </Grid>
     </Grid>
 </Page>

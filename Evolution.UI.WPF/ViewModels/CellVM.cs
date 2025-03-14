@@ -4,10 +4,22 @@ using Evolution.Core.Entities;
 
 namespace Evolution.UI.WPF.ViewModels
 {
-    public class CellViewModel : BindableBase
+    public class CellVM : BindableBase
     {
-        private readonly Cell _cell;
+        public readonly Guid id;
+
         private Brush _color;
+        private CellType _type;
+
+        public CellType Type 
+        { 
+            get => _type;
+            set
+            {
+                _type = value;
+                Color = GetCellColor();
+            } 
+        }
 
         public Brush Color
         {
@@ -15,21 +27,19 @@ namespace Evolution.UI.WPF.ViewModels
             private set => SetProperty(ref _color, value);
         }
 
-        public CellViewModel(Cell cell)
+        public CellVM(Guid id)
         {
-            _cell = cell;
-            Color = GetCellColor();
-            _cell.CellChanged += _ => Update();
+            this.id = id;
         }
 
-        public void Update()
+        public void Update(CellType type)
         {
-            Color = GetCellColor();
+            Type = type;
         }
 
         private Brush GetCellColor()
         {
-            return _cell.Type switch
+            return Type switch
             {
                 CellType.Wall => Brushes.Gray,
                 CellType.Food => Brushes.Red,

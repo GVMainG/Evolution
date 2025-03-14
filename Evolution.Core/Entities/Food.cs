@@ -1,9 +1,11 @@
-﻿namespace Evolution.Core.Entities
-{
-    public class Food
-    {
-        public int NutritionalValue { get; private set; }
+﻿using Evolution.Core.Interfaces;
 
-        public Food(int nutritionalValue = 11) { NutritionalValue = nutritionalValue; }
+namespace Evolution.Core.Entities
+{
+    public class Food : ICellContent
+    {
+        public int NutritionalValue { get; }
+
+        public Food(int value) => NutritionalValue = value;
     }
 }

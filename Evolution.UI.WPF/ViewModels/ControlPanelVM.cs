@@ -1,8 +1,11 @@
-﻿namespace Evolution.UI.WPF.ViewModels
+﻿using Prism.Commands;
+using Prism.Mvvm;
+
+namespace Evolution.UI.WPF.ViewModels
 {
-    public class ControlPanelViewModel : BindableBase
+    public class ControlPanelVM : BindableBase
     {
-        private readonly SimulationViewModel _simulationViewModel;
+        private readonly WorldVM _simulationViewModel;
 
         public DelegateCommand StartSimulationCommand { get; }
         public DelegateCommand StopSimulationCommand { get; }
@@ -18,12 +21,12 @@
             }
         }
 
-        public ControlPanelViewModel(SimulationViewModel simulationViewModel)
+        public ControlPanelVM(WorldVM simulationViewModel)
         {
             _simulationViewModel = simulationViewModel;
 
-            StartSimulationCommand = new DelegateCommand(_simulationViewModel.StartSimulation);
-            StopSimulationCommand = new DelegateCommand(_simulationViewModel.StopSimulation);
+            StartSimulationCommand = new DelegateCommand(_simulationViewModel.Start);
+            StopSimulationCommand = new DelegateCommand(_simulationViewModel.Stop);
 
             SimulationSpeed = 100; // Значение по умолчанию
         }

@@ -1,162 +1,128 @@
-﻿using Evolution.Core.Infrastructure;
+﻿using Evolution.Core.Interfaces;
 
-namespace Evolution.Core.Entities
+namespace Evolution.Core.Entities;
+
+/// <summary>
+/// Представляет бота в мире.
+/// </summary>
+public class Bot : ICellContent
 {
-    public class Bot
-    {
-        public readonly Guid? id;
-        private (int x, int y) _position;
-        private int _energy;
-        private int _commandIndex;
-        private Direction facing;
-        public readonly long generationCreation;
+    public readonly Guid? id; 
+    public readonly int generationCreation;
 
-        public int Energy 
-        { 
-            get => _energy;
-            set
+    private int _energy;
+    private int commandIndex;
+    private (int x, int y) position;
+
+    #region Свойства
+
+    /// <summary>
+    /// Позиция бота в мире.
+    /// </summary>
+    public (int x, int y) Position
+    {
+        get => position;
+        set
+        {
+            OnPosition?.Invoke(position, value, this);
+            position = value;
+        }
+    }
+
+    /// <summary>
+    /// Энергия бота.
+    /// </summary>
+    public int Energy
+    {
+        get => _energy;
+        set
+        {
+            if (_energy != value)
             {
                 _energy = value;
+                OnEnergyChanged?.Invoke(this);
 
-                //if(_energy > 0)
-                //    OnEnergy.Invoke(_energy);
-
+                // Если энергия упала до 0, сразу убиваем бота.
                 if (_energy <= 0)
-                    OnDeath.Invoke(this);
-            } 
+                {
+                    OnDeath?.Invoke(this);
+                }
+            }
         }
-        public Genome Genome { get; set; }
-        public (int x, int y) Position 
-        { 
-            get => _position;
-            set
-            {
-                if (value.x < 0 || value.y < 0)
-                    return;
+    }
 
-                OnMoveAttempt?.Invoke(this, value); // Уведомляем игровое поле
-
-                var old = _position;
-                _position = value;
-                OnPosition?.Invoke((old.x, old.y), (_position.x, _position.y));
-            } 
-        }
-
-        public Direction Facing { get => facing; set => facing = value; }
-
-        public event Action<Bot> OnDeath;
-        public event Action<int> OnEnergy;
-        public event Action<(int x, int y), (int x, int y)> OnPosition;
-        public event Action<Bot>? OnCommandExecuted;
-        public event Action<Bot, (int x, int y)>? OnMoveAttempt;
-
-        public Bot(Genome genome, long generationCreation, (int x, int y) position, int energy = 25)
+    /// <summary>
+    /// Индекс текущей команды.
+    /// </summary>
+    public int CommandIndex
+    {
+        get => commandIndex;
+        set
         {
-            if (genome == null)
-                throw new ArgumentNullException(nameof(genome), "Genome cannot be null");
-
-            id = Guid.NewGuid();
-            Genome = genome;
-            Energy = energy;
-            this.generationCreation = generationCreation;
-            Position = position;
-            Facing = (Direction)Random.Shared.Next(0, 8);
+            var c = Genome.GeneticCode.Count;
+            if (value >= c)
+                commandIndex = value % c;
         }
+    }
 
+    /// <summary>
+    /// Геном бота.
+    /// </summary>
+    public Genome Genome { get; }
 
-        /// <summary>
-        /// Получает текущий индекс команды в геноме.
-        /// </summary>
-        public int CommandIndex
+    /// <summary>
+    /// Направление, в котором смотрит бот.
+    /// </summary>
+    public Direction Facing { get; set; }
+
+    #endregion Свойства
+
+    #region Event
+
+    public event Action<Bot>? OnDeath;
+    public event Action<(int xOld, int yOld), (int xNew, int yNew), Bot>? OnPosition;
+    public event Action<Bot>? OnCommandExecuted;
+    public event Action<Bot>? OnEnergyChanged;
+
+    #endregion Event
+
+    /// <summary>
+    /// Инициализирует новый экземпляр бота.
+    /// </summary>
+    /// <param name="genome">Геном бота.</param>
+    /// <param name="generationCreation">Поколение создания бота.</param>
+    /// <param name="position">Начальная позиция бота.</param>
+    /// <param name="energy">Начальная энергия бота.</param>
+    public Bot(Genome genome, int generationCreation, (int x, int y) position, int energy = 25)
+    {
+        id = Guid.NewGuid();
+        Genome = genome;
+        Energy = energy;
+        this.generationCreation = generationCreation;
+        Position = position;
+        Facing = (Direction)Random.Shared.Next(0, 7);
+    }
+
+    /// <summary>
+    /// Вычисляет позицию перед ботом в зависимости от его направления.
+    /// </summary>
+    /// <returns>Новая позиция перед ботом.</returns>
+    public (int x, int y) CalculatingFrontPosition()
+    {
+        var newPosition = Position;
+
+        switch (Facing)
         {
-            get => _commandIndex;
-            set
-            {
-                _commandIndex = value;
-                if (_commandIndex >= Genome.GeneticCode.Length)
-                    CommandIndex = CommandIndex % 64;
-            }
+            case Direction.N: newPosition.y--; break;
+            case Direction.S: newPosition.y++; break;
+            case Direction.W: newPosition.x--; break;
+            case Direction.E: newPosition.x++; break;
+            case Direction.NW: newPosition.y--; newPosition.x--; break;
+            case Direction.NE: newPosition.y--; newPosition.x++; break;
+            case Direction.SW: newPosition.y++; newPosition.x--; break;
+            case Direction.SE: newPosition.y++; newPosition.x++; break;
         }
 
-        /// <summary>
-        /// Вычисляет позицию перед ботом на основе направления, в котором он смотрит.
-        /// </summary>
-        /// <returns>Новая позиция перед ботом.</returns>
-        public (int x, int y) CalculatingFrontPosition()
-        {
-            var newPosition = Position;
-
-            // Вычисляем новую позицию на основе направления, в котором смотрит бот
-            switch (Facing)
-            {
-                case Direction.N: newPosition.y--; break; // Должно уменьшаться (↑ вверх)
-                case Direction.S: newPosition.y++; break; // Должно увеличиваться (↓ вниз)
-                case Direction.W: newPosition.x--; break; // ← влево
-                case Direction.E: newPosition.x++; break; // → вправо
-                case Direction.NW: newPosition.y--; newPosition.x--; break;
-                case Direction.NE: newPosition.y--; newPosition.x++; break;
-                case Direction.SW: newPosition.y++; newPosition.x--; break;
-                case Direction.SE: newPosition.y++; newPosition.x++; break;
-            }
-
-            return newPosition;
-        }
-
-        /// <summary>
-        /// Выполняет следующую команду в геноме бота.
-        /// </summary>
-        /// <param name="field">Игровое поле, на котором действует бот.</param>
-        public void ExecuteNextCommand(FieldBase field, int i = 0)
-        {
-            if (field == null)
-                throw new ArgumentNullException(nameof(field), "FieldBase cannot be null");
-
-            if (Genome == null || Genome.GeneticCode == null)
-            {
-                Console.WriteLine($"❌ Ошибка: Бот {id} имеет `null`-геном!");
-                return;
-            }
-
-            int command = Genome.GeneticCode[CommandIndex];
-
-            // Определяем действие на основе значения команды.
-            if (command >= 0 && command <= 7)
-            {
-                Commands.Turn(command, this);
-                Energy -= 1;
-            }
-            else if (command >= 8 && command <= 15)
-            {
-                Commands.GrabFood(field, this);
-                Energy -= 2;
-            }
-            else if (command >= 16 && command <= 18)
-            {
-                Commands.LookAhead(field, this, i);
-                Energy -= 3;
-            }
-            else if (command >= 19 && command <= 26)
-            {
-                Commands.Move(this);
-                Energy -= 3;
-            }
-            else if (command >= 27 && command <= 30)
-            {
-                Commands.ConvertPoison(field, this);
-                Energy -= 1;
-            }
-            else if (command >= 31 && command <= 63)
-            {
-                Commands.Jump(this, command);
-                Energy -= 1;
-            }
-            else
-            {
-                Energy -= 20;
-            }
-            CommandIndex++;
-            // Уведомляем подписчиков (BotInfoWindow)
-            OnCommandExecuted?.Invoke(this);
-        }
+        return newPosition;
     }
 }
