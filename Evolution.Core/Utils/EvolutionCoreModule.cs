@@ -1,7 +1,5 @@
 ﻿using Evolution.Core.Behaviors;
 using Evolution.Core.Commands;
-using Evolution.Core.Core;
-using Evolution.Core.Core.Evolution;
 using Evolution.Core.Evolution;
 using Evolution.Core.Infrastructure;
 using Evolution.Core.Interfaces;

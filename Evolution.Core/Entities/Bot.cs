@@ -11,7 +11,7 @@ public class Bot : ICellContent
     public readonly int generationCreation;
 
     private int _energy;
-    private int commandIndex;
+    private int commandIndex = 0;
     private (int x, int y) position;
 
     #region Свойства
@@ -62,6 +62,8 @@ public class Bot : ICellContent
             var c = Genome.GeneticCode.Count;
             if (value >= c)
                 commandIndex = value % c;
+            else
+                commandIndex = value;
         }
     }
 
@@ -93,7 +95,7 @@ public class Bot : ICellContent
     /// <param name="generationCreation">Поколение создания бота.</param>
     /// <param name="position">Начальная позиция бота.</param>
     /// <param name="energy">Начальная энергия бота.</param>
-    public Bot(Genome genome, int generationCreation, (int x, int y) position, int energy = 25)
+    public Bot(Genome genome, int generationCreation, (int x, int y) position, int energy = 50)
     {
         id = Guid.NewGuid();
         Genome = genome;

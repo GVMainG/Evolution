@@ -10,6 +10,9 @@ namespace Evolution.UI.WPF.ViewModels
         public DelegateCommand StartSimulationCommand { get; }
         public DelegateCommand StopSimulationCommand { get; }
 
+        public DelegateCommand ToggleVisualizationCommand { get; }
+        public DelegateCommand ToggleDelayCommand { get; }
+
         private int _simulationSpeed;
         public int SimulationSpeed
         {
@@ -21,14 +24,38 @@ namespace Evolution.UI.WPF.ViewModels
             }
         }
 
+        private bool _isVisualizationEnabled = true;
+        public bool IsVisualizationEnabled
+        {
+            get => _isVisualizationEnabled;
+            set
+            {
+                SetProperty(ref _isVisualizationEnabled, value);
+                _simulationViewModel.IsVisualizationEnabled = value;
+            }
+        }
+
+        private bool _isDelayEnabled = true;
+        public bool IsDelayEnabled
+        {
+            get => _isDelayEnabled;
+            set
+            {
+                SetProperty(ref _isDelayEnabled, value);
+                _simulationViewModel.gameLoop.IsDelayEnabled = value;
+            }
+        }
+
         public ControlPanelVM(WorldVM simulationViewModel)
         {
             _simulationViewModel = simulationViewModel;
 
             StartSimulationCommand = new DelegateCommand(_simulationViewModel.Start);
             StopSimulationCommand = new DelegateCommand(_simulationViewModel.Stop);
+            ToggleVisualizationCommand = new DelegateCommand(() => IsVisualizationEnabled = !IsVisualizationEnabled);
+            ToggleDelayCommand = new DelegateCommand(() => IsDelayEnabled = !IsDelayEnabled);
 
-            SimulationSpeed = 100; // Значение по умолчанию
+            SimulationSpeed = 100;
         }
     }
 }

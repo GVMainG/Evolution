@@ -16,6 +16,18 @@ public class WorldVM : BindableBase
         set => SetProperty(ref _isRunning, value);
     }
 
+    private bool _isVisualizationEnabled = true;
+
+    public bool IsVisualizationEnabled
+    {
+        get => _isVisualizationEnabled;
+        set
+        {
+            SetProperty(ref _isVisualizationEnabled, value);
+            UpdateVisualization();
+        }
+    }
+
     public WorldVM(SemulationLoop gameLoop)
     {
         this.gameLoop = gameLoop;
@@ -28,6 +40,21 @@ public class WorldVM : BindableBase
             Cells.Add(newCellVM);
 
             newCellVM.Update(c.Type);
+        }
+    }
+
+    private void UpdateVisualization()
+    {
+        if (_isVisualizationEnabled)
+        {
+            foreach (var c in gameLoop.World.Cells)
+            {
+                var cellVM = Cells.FirstOrDefault(cell => cell.id == c.Id);
+                if (cellVM != null)
+                {
+                    cellVM.Update(c.Type);
+                }
+            }
         }
     }
 

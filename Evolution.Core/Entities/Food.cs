@@ -6,6 +6,6 @@ namespace Evolution.Core.Entities
     {
         public int NutritionalValue { get; }
 
-        public Food(int value) => NutritionalValue = value;
+        public Food(int value = 25) => NutritionalValue = value;
     }
 }

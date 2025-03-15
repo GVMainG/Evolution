@@ -10,7 +10,7 @@ namespace Evolution.UI.WPF.ViewModels
         private int _generation;
         public int Generation
         {
-            get => _generation;
+            get => Simulation.gameLoop.EvolutionManager.GenerationCount;
             set => SetProperty(ref _generation, value);
         }
 
@@ -18,6 +18,8 @@ namespace Evolution.UI.WPF.ViewModels
         {
             Simulation = simulation;
             ControlPanel = controlPanel;
+
+            simulation.gameLoop.EvolutionManager.OnGenerationChanged += (gen) => Generation = gen;
         }
     }
 }

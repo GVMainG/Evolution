@@ -23,15 +23,31 @@ public class BotBehavior : IBotBehavior
     /// </summary>
     /// <param name="bot">Бот, который выполняет команду.</param>
     /// <param name="world">Мир, в котором находится бот.</param>
-    public void ExecuteNextCommand(Bot bot, IWorld world)
+    public void ExecuteNextCommand(Bot bot, IWorld world, int countRepetitions = 0)
     {
         if (bot.Genome == null || bot.Genome.GeneticCode == null)
         {
             return;
         }
 
-        int command = bot.Genome.GeneticCode[bot.CommandIndex];
-        _commandsProcessor.ProcessCommand(bot, world, command);
-        bot.CommandIndex++;
+        int maxIterations = 3; // Ограничение по количеству повторных вызовов
+        int iteration = 0;
+
+        while (iteration < maxIterations)
+        {
+            int command = bot.Genome.GeneticCode[bot.CommandIndex];
+            var commandObj = _commandsProcessor.GetCommand(command);
+
+            commandObj.Execute(bot, world);
+            bot.Energy -= commandObj.EnergyCost;
+            bot.CommandIndex++;
+
+            if (!commandObj.IsFinalOne)
+            {
+                break; // Выходим из цикла, если команда не требует повторного выполнения
+            }
+
+            iteration++; // Увеличиваем счетчик
+        }
     }
 }

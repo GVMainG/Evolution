@@ -33,7 +33,7 @@ namespace Evolution.UI.WPF
             containerRegistry.RegisterForNavigation<SimulationPage>();
 
             // Регистрация контролов
-            containerRegistry.Register<WorldView>();
+            containerRegistry.RegisterSingleton<WorldView>();
             containerRegistry.Register<ControlPanel>();
 
             // Явная привязка View к ViewModel

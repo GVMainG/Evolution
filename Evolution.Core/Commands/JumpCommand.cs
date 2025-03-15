@@ -7,6 +7,8 @@ namespace Evolution.Core.Commands
     {
         public int EnergyCost => 1;
 
+        public bool IsFinalOne => false;
+
         public void Execute(Bot bot, IWorld world)
         {
             int jumpOffset = bot.Genome.GeneticCode[bot.CommandIndex] % bot.Genome.GeneticCode.Count;

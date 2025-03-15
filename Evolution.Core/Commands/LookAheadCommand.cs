@@ -5,7 +5,9 @@ namespace Evolution.Core.Commands
 {
     public class LookAheadCommand : IBotCommand
     {
-        public int EnergyCost => 3;
+        public int EnergyCost => 2;
+
+        public bool IsFinalOne => false;
 
         public void Execute(Bot bot, IWorld world)
         {

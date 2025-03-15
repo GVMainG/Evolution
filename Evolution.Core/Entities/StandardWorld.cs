@@ -35,6 +35,33 @@ public class StandardWorld : IWorld
                 Cells[x, y] = new Cell();
             }
         }
+
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (x == 0 || x == Width - 1 || y == 0 || y == Height - 1)
+                {
+                    Cells[x, y].Content = new Wall();
+                }
+            }
+        }
+
+        for(int i = 0; i <= 150; i++)
+        {
+            SpawnFood();
+        }
+    }
+
+    public void SpawnFood()
+    {
+        var position = GetRandomEmptyPosition();
+        var cell = GetCell(position.x, position.y);
+
+        if (cell.Content is not Food)
+        {
+            cell.Content = new Food();
+        }
     }
 
     /// <summary>
@@ -70,5 +97,22 @@ public class StandardWorld : IWorld
         } while (Cells[x, y].Content != null);
 
         return (x, y);
+    }
+
+    public int GetFoodCount()
+    {
+        int count = 0;
+        for (int x = 0; x < Width; x++)
+        {
+            for (int y = 0; y < Height; y++)
+            {
+                if (Cells[x, y].Content is Food)
+                {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 }

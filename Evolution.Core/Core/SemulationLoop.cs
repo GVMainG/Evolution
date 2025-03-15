@@ -1,6 +1,6 @@
 ﻿using Evolution.Core.Interfaces;
 
-namespace Evolution.Core.Core
+namespace Evolution.Core
 {
     public class SemulationLoop
     {
@@ -16,6 +16,14 @@ namespace Evolution.Core.Core
         public IWorld World => _world;
         public IEvolutionManager EvolutionManager => _evolutionManager;
         public IBotManager BotManager => _botManager;
+
+        private bool _isDelayEnabled = true;
+
+        public bool IsDelayEnabled
+        {
+            get => _isDelayEnabled;
+            set => _isDelayEnabled = value;
+        }
 
         public SemulationLoop(IWorld world, IBotManager botManager, IBotBehavior botBehavior, IEvolutionManager evolutionManager)
         {
@@ -42,18 +50,21 @@ namespace Evolution.Core.Core
                 while (_isRunning)
                 {
                     ExecuteTurn();
-                    Thread.Sleep(_gameSpeed);
+                    if (_isDelayEnabled)
+                    {
+                        Thread.Sleep(_gameSpeed);
+                    }
                 }
             });
         }
 
-        private void ExecuteTurn()
+        public void ExecuteTurn()
         {
             var bots = BotManager.Bots;
 
             for (int i = bots.Count - 1; i >= 0; i--)
             {
-                _botBehavior.ExecuteNextCommand(bots[i], _world);
+                _botBehavior.ExecuteNextCommand(bots[i], _world, 0);
                 EvolutionManager.CheckAndEvolve();
             }
         }

@@ -2,7 +2,7 @@
 using Evolution.Core.Interfaces;
 using Evolution.Core.Utils;
 
-namespace Evolution.Core.Core
+namespace Evolution.Core
 {
     /// <summary>
     /// Управляет ботами в мире.
@@ -20,21 +20,17 @@ namespace Evolution.Core.Core
         public event Action<Bot>? OnBotSpawn;
         public event Action<(int x, int y)>? OnBotRemoved;
 
-        /// <summary>
-        /// Инициализирует новый экземпляр менеджера ботов.
-        /// </summary>
-        /// <param name="field">Мир, в котором находятся боты.</param>
-        /// <param name="botFactory">Фабрика для создания ботов.</param>
-        public BotManager(IWorld field, IBotFactory botFactory)
+        private readonly IEvolutionManager _evolutionManager;
+
+        public BotManager(IWorld field, IBotFactory botFactory, IEvolutionManager evolutionManager)
         {
             _world = field;
             _botFactory = botFactory;
+            _evolutionManager = evolutionManager;
 
-            // TODO: задать увересальное количество генирируемых ботов в начале.
             for (int i = 0; i < 50; i++)
             {
                 var position = _world.GetRandomEmptyPosition();
-                // TODO: Задать единую точку создания "GameConfig".
                 var genome = new Genome(1, null, null, new DefaultRandomProvider(), new GameConfig());
                 var bot = _botFactory.CreateBot(genome, 1, position);
 
@@ -73,6 +69,9 @@ namespace Evolution.Core.Core
                 Bots.Remove(bot);
 
                 OnBotRemoved?.Invoke(bot.Position);
+
+                // Проверка на необходимость эволюции после удаления бота
+                _evolutionManager.CheckAndEvolve();
             }
         }
 

@@ -5,7 +5,10 @@ namespace Evolution.Core.Commands
 {
     public class MoveCommand : IBotCommand
     {
-        public int EnergyCost => 3;
+        public int EnergyCost => 1;
+
+        public bool IsFinalOne => true;
+
         private readonly IEnergyManager _energyManager;
 
         public MoveCommand(IEnergyManager energyManager)
@@ -29,6 +32,9 @@ namespace Evolution.Core.Commands
 
             bot.Position = newPosition; // Бот двигается
             _energyManager.ConsumeEnergy(bot, EnergyCost); // Уменьшаем энергию за движение
+
+            var lookAheadCommand = new LookAheadCommand();
+            lookAheadCommand.Execute(bot, world);
         }
     }
 }

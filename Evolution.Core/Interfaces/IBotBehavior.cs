@@ -4,5 +4,5 @@ namespace Evolution.Core.Interfaces;
 
 public interface IBotBehavior
 {
-    void ExecuteNextCommand(Bot bot, IWorld field);
+    void ExecuteNextCommand(Bot bot, IWorld field, int countRepetitions);
 }

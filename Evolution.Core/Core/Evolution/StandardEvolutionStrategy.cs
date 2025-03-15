@@ -1,7 +1,7 @@
 ﻿using Evolution.Core.Entities;
 using Evolution.Core.Interfaces;
 
-namespace Evolution.Core.Core.Evolution
+namespace Evolution.Core.Evolution
 {
     /// <summary>
     /// Реализует стандартную стратегию эволюции.
@@ -43,7 +43,7 @@ namespace Evolution.Core.Core.Evolution
 
                 var newPosition3 = botManager.World.GetRandomEmptyPosition();
                 botManager.AddBot(botManager.BotFactory.CreateBot(
-                    survivor.Genome.Mutate(survivor.generationCreation, 1),
+                    survivor.Genome.Mutate(survivor.generationCreation, 63),
                     survivor.generationCreation + 1, newPosition3));
             }
         }

@@ -6,6 +6,8 @@
              prism:ViewModelLocator.AutoWireViewModel="True">
 
     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+        <Button Content="Визуализация" Command="{Binding ToggleVisualizationCommand}" />
+        <Button Content="Задержка" Command="{Binding ToggleDelayCommand}" />
         <Button Content="Запуск" Command="{Binding StartSimulationCommand}" Margin="5"/>
         <Button Content="Остановить" Command="{Binding StopSimulationCommand}" Margin="5"/>
         <TextBlock Text="Скорость:" VerticalAlignment="Center" Margin="10,0"/>

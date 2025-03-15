@@ -41,6 +41,10 @@ namespace Evolution.Core.Evolution
             if (_botManager.Bots.Count > 10) return;
 
             _evolutionStrategy.Evolve(_botManager, GenerationCount);
+            for (var i = ((StandardWorld)_botManager.World).GetFoodCount(); i < _botManager.Bots.Count * 3; i++)
+            {
+                ((StandardWorld)_botManager.World).SpawnFood();
+            }
             GenerationCount++;
         }
     }
